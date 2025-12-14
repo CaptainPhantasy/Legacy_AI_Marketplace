@@ -1,12 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
+import { fetchGmailMessages } from '@/lib/connectors/gmail'
+import { fetchDriveFiles } from '@/lib/connectors/google-drive'
 import { decryptTokens } from '@/lib/encryption'
+import { createClient } from '@/lib/supabase/server'
+import type { Database, Json } from '@/types/database'
+import type { AppManifest } from '@/types/manifest'
 import { buildPrompt, createContextData, type ContextData } from './context'
 import { callGemini, type GeminiModelId } from './gemini'
-import { validateOutput, safeJsonParse } from './validation'
-import { fetchDriveFiles } from '@/lib/connectors/google-drive'
-import { fetchGmailMessages } from '@/lib/connectors/gmail'
-import type { Database } from '@/types/database'
-import type { AppManifest } from '@/types/manifest'
+import { safeJsonParse, validateOutput } from './validation'
 
 type ConnectorType = Database['public']['Enums']['connector_type']
 type RunStatus = Database['public']['Enums']['run_status']
@@ -72,7 +72,6 @@ export async function executeRun(
     }
 
     const manifest = installedApp.version.manifest_json as unknown as AppManifest
-    const configSchema = installedApp.version.config_schema_json as object
     const runTemplate = installedApp.version.run_template
     const outputSchema = installedApp.version.output_schema_json as object
 
@@ -133,7 +132,7 @@ export async function executeRun(
     if (!validationResult.valid) {
       // Retry logic could go here
       const retryConfig = manifest.execution?.retryConfig
-      if (retryConfig?.retryOnValidationFailure && retryConfig?.maxRetries > 0) {
+      if (retryConfig?.retryOnValidationFailure && (retryConfig?.maxRetries ?? 0) > 0) {
         // For now, just fail - retry logic can be added later
         console.warn('Validation failed, retry not implemented:', validationResult.errors)
       }
@@ -178,7 +177,7 @@ export async function executeRun(
 async function fetchConnectorData(
   userId: string,
   grants: Database['public']['Tables']['installed_app_grants']['Row'][],
-  supabase: ReturnType<typeof createClient>
+  supabase: Awaited<ReturnType<typeof createClient>>
 ): Promise<ContextData['connectors']> {
   const data: ContextData['connectors'] = {}
 
@@ -213,15 +212,15 @@ async function fetchConnectorData(
       })
 
       // Map grantConfig (from grant_json) to connector options format
-      const grantConfig = grant.grant_json || {}
+      const grantConfig = (grant.grant_json || {}) as Record<string, unknown>
 
       switch (grant.connector_type as ConnectorType) {
         case 'google_drive': {
           // Map grantConfig to Drive options: { pageSize?, pageToken?, q? }
           const options = {
-            pageSize: grantConfig.pageSize || grantConfig.maxResults || 100,
-            pageToken: grantConfig.pageToken,
-            q: grantConfig.query || grantConfig.q,
+            pageSize: (grantConfig.pageSize as number | undefined) || (grantConfig.maxResults as number | undefined) || 100,
+            pageToken: grantConfig.pageToken as string | undefined,
+            q: (grantConfig.query as string | undefined) || (grantConfig.q as string | undefined),
           }
           const result = await fetchDriveFiles(
             tokens.accessToken,
@@ -235,10 +234,10 @@ async function fetchConnectorData(
         case 'gmail': {
           // Map grantConfig to Gmail options: { maxResults?, pageToken?, q? }
           const options = {
-            maxResults: grantConfig.maxResults || grantConfig.pageSize || 50,
-            pageToken: grantConfig.pageToken,
-            q: grantConfig.query || grantConfig.q,
-            labelIds: grantConfig.labelIds,
+            maxResults: (grantConfig.maxResults as number | undefined) || (grantConfig.pageSize as number | undefined) || 50,
+            pageToken: grantConfig.pageToken as string | undefined,
+            q: (grantConfig.query as string | undefined) || (grantConfig.q as string | undefined),
+            labelIds: grantConfig.labelIds as string[] | undefined,
           }
           const result = await fetchGmailMessages(
             tokens.accessToken,
@@ -338,10 +337,10 @@ export async function saveRunArtifacts(
 
   const { error } = await supabase.from('run_artifacts').insert({
     run_id: runId,
-    inputs_summary_json: artifacts.inputsSummary,
-    output_json: artifacts.output,
+    inputs_summary_json: artifacts.inputsSummary as Json | undefined,
+    output_json: artifacts.output as Json | undefined,
     raw_response: artifacts.rawResponse,
-    logs: artifacts.logs,
+    logs: artifacts.logs as Json | undefined,
     model_used: artifacts.modelUsed,
     tokens_input: artifacts.tokensInput,
     tokens_output: artifacts.tokensOutput,

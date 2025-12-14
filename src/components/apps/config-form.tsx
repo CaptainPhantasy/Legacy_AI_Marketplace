@@ -1,16 +1,14 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Loader2, Save } from 'lucide-react'
 import { useState } from 'react'
+import { useForm, type FieldErrors, type UseFormRegister } from 'react-hook-form'
+import { z } from 'zod'
 import type { JsonSchema } from '@/types/manifest'
-import type { UseFormRegister, FieldErrors } from 'react-hook-form'
 
 interface ConfigFormProps {
   schema: JsonSchema
@@ -165,7 +163,7 @@ function renderField(
     <Input
       type="text"
       {...commonProps}
-      placeholder={prop.placeholder || prop.default}
+      placeholder={prop.placeholder || (prop.default !== undefined ? String(prop.default) : undefined)}
     />
   )
 }

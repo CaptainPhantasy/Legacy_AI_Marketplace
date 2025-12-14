@@ -47,7 +47,7 @@ export default async function DashboardPage() {
           Welcome back{profile?.full_name ? `, ${profile.full_name}` : ''}!
         </h1>
         <p className="text-muted-foreground">
-          Here's what's happening with your apps and connections.
+          Here&apos;s what&apos;s happening with your apps and connections.
         </p>
       </div>
 

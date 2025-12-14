@@ -1,4 +1,4 @@
-import { Database } from './database'
+import type { Database } from './database'
 
 export type Json = Database['public']['Tables']['app_versions']['Row']['manifest_json']
 
@@ -26,6 +26,17 @@ export interface AppManifest {
   ui?: {
     outputRenderer?: 'json' | 'table' | 'cards'
   }
+  execution?: {
+    model?: string
+    modelConfig?: {
+      temperature?: number
+      maxOutputTokens?: number
+    }
+    retryConfig?: {
+      retryOnValidationFailure?: boolean
+      maxRetries?: number
+    }
+  }
 }
 
 /**
@@ -33,8 +44,19 @@ export interface AppManifest {
  */
 export interface JsonSchema {
   type: string
+  title?: string
+  description?: string
   properties?: Record<string, JsonSchema>
   required?: string[]
   items?: JsonSchema
+  enum?: string[]
+  format?: string
+  placeholder?: string
+  rows?: number
+  minimum?: number
+  maximum?: number
+  minLength?: number
+  maxLength?: number
+  default?: string | number | boolean
   [key: string]: unknown
 }

@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { InstallButton } from '@/components/marketplace/install-button'
-import { Database } from '@/types/database'
-import { AppManifest } from '@/types/manifest'
+import type { Database } from '@/types/database'
+import type { AppManifest } from '@/types/manifest'
 
 type App = Database['public']['Tables']['apps']['Row']
 type AppVersion = Database['public']['Tables']['app_versions']['Row']
@@ -180,7 +181,7 @@ export default async function AppDetailPage({
                     This app is already installed.
                   </p>
                   <Button asChild className="w-full">
-                    <a href="/apps">Go to My Apps</a>
+                    <Link href="/apps">Go to My Apps</Link>
                   </Button>
                 </div>
               ) : missingConnectors.length > 0 ? (
@@ -192,7 +193,7 @@ export default async function AppDetailPage({
                     Connect {missingConnectors.map((c) => c.type.replace('_', ' ')).join(', ')} to install this app.
                   </p>
                   <Button asChild variant="outline" className="w-full">
-                    <a href="/connections">Go to Connections</a>
+                    <Link href="/connections">Go to Connections</Link>
                   </Button>
                 </div>
               ) : (

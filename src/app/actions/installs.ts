@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { Database } from '@/types/database'
+import type { Database, Json } from '@/types/database'
 
 type ConnectorType = Database['public']['Enums']['connector_type']
 type GrantStatus = Database['public']['Enums']['grant_status']
@@ -174,7 +174,7 @@ export async function updateAppConfig(
 
   const { error } = await supabase
     .from('installed_apps')
-    .update({ config_json: config as any })
+    .update({ config_json: config as Json })
     .eq('id', installedAppId)
     .eq('user_id', user.id)
 

@@ -58,7 +58,10 @@ export function GrantManager({
 }: GrantManagerProps) {
   const [loading, setLoading] = useState<string | null>(null)
 
-  const handleToggle = async (grantId: string, currentStatus: string) => {
+  const handleToggle = async (
+    grantId: string,
+    currentStatus: Grant['status']
+  ) => {
     setLoading(grantId)
     const newStatus = currentStatus === 'allowed' ? 'denied' : 'allowed'
     await updateGrant(grantId, newStatus)
@@ -68,7 +71,7 @@ export function GrantManager({
   if (requirements.length === 0) {
     return (
       <p className="text-muted-foreground text-sm">
-        This app doesn't require any connector permissions.
+        This app doesn&apos;t require any connector permissions.
       </p>
     )
   }
@@ -130,7 +133,7 @@ export function GrantManager({
                   <Button
                     variant={grant.status === 'allowed' ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => handleToggle(grant.id, grant.status)}
+                    onClick={() => handleToggle(grant.id, grant.status ?? 'pending')}
                     disabled={loading === grant.id}
                     className={cn(
                       grant.status === 'allowed' &&

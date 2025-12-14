@@ -1,11 +1,12 @@
-import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai'
+import { GoogleGenerativeAI, SchemaType, type Schema } from '@google/generative-ai'
 import type { JsonSchema } from '@/types/manifest'
 
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error('GEMINI_API_KEY environment variable is required')
+function getGenAI() {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY environment variable is required')
+  }
+  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 }
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 export interface GeminiRequest {
   model: string
@@ -32,13 +33,13 @@ export interface GeminiResponse {
  * Convert JSON Schema to Gemini Schema format
  * Gemini uses a slightly different schema format
  */
-function convertToGeminiSchema(jsonSchema: JsonSchema): Record<string, unknown> {
-  const convert = (schema: JsonSchema): Record<string, unknown> => {
+function convertToGeminiSchema(jsonSchema: JsonSchema): Schema {
+  const convert = (schema: JsonSchema): Schema => {
     if (!schema || typeof schema !== 'object') {
       return schema
     }
 
-    const result: any = {}
+    const result: Record<string, unknown> = {}
 
     // Map type
     if (schema.type) {
@@ -65,10 +66,11 @@ function convertToGeminiSchema(jsonSchema: JsonSchema): Record<string, unknown> 
 
     // Convert properties
     if (schema.properties) {
-      result.properties = {}
+      const props: Record<string, Schema> = {}
       for (const [key, value] of Object.entries(schema.properties)) {
-        result.properties[key] = convert(value)
+        props[key] = convert(value)
       }
+      result.properties = props
     }
 
     // Copy required
@@ -86,38 +88,39 @@ function convertToGeminiSchema(jsonSchema: JsonSchema): Record<string, unknown> 
       result.nullable = true
     }
 
-    return result
+    return result as unknown as Schema
   }
 
   return convert(jsonSchema)
 }
 
 export async function callGemini(request: GeminiRequest): Promise<GeminiResponse> {
-  const modelConfig: {
-    model: string
-    generationConfig: {
-      temperature: number
-      maxOutputTokens: number
-      topP: number
-      topK: number
-    }
+  const generationConfig: {
+    temperature: number
+    maxOutputTokens: number
+    topP: number
+    topK: number
+    responseMimeType?: string
+    responseSchema?: Schema
   } = {
-    model: request.model,
-    generationConfig: {
-      temperature: request.config?.temperature ?? 0.3,
-      maxOutputTokens: request.config?.maxOutputTokens ?? 8192,
-      topP: request.config?.topP ?? 0.95,
-      topK: request.config?.topK ?? 40,
-    },
+    temperature: request.config?.temperature ?? 0.3,
+    maxOutputTokens: request.config?.maxOutputTokens ?? 8192,
+    topP: request.config?.topP ?? 0.95,
+    topK: request.config?.topK ?? 40,
   }
 
   // If output schema provided, use JSON mode
   if (request.outputSchema) {
-    modelConfig.generationConfig.responseMimeType = 'application/json'
-    modelConfig.generationConfig.responseSchema = convertToGeminiSchema(request.outputSchema)
+    generationConfig.responseMimeType = 'application/json'
+    generationConfig.responseSchema = convertToGeminiSchema(request.outputSchema as JsonSchema)
   }
 
-  const model = genAI.getGenerativeModel(modelConfig)
+  const modelConfig = {
+    model: request.model,
+    generationConfig,
+  }
+
+  const model = getGenAI().getGenerativeModel(modelConfig)
 
   const result = await model.generateContent(request.prompt)
   const response = result.response
