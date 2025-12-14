@@ -1,11 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { RunStatus } from '@/components/runs/run-status'
 import { RunOutput } from '@/components/runs/run-output'
+import { RunStatus } from '@/components/runs/run-status'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, Clock, Cpu, Hash } from 'lucide-react'
 import Link from 'next/link'
+import { notFound, redirect } from 'next/navigation'
 import type { AppManifest } from '@/types/manifest'
 
 export default async function RunDetailPage({

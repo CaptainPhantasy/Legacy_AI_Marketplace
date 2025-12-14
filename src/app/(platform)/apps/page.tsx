@@ -1,10 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import { InstalledAppCard } from '@/components/apps/installed-app-card'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
 import { Plus } from 'lucide-react'
-import type { Database } from '@/types/database'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import type { AppManifest } from '@/types/manifest'
 
 export default async function MyAppsPage() {
@@ -77,7 +76,7 @@ export default async function MyAppsPage() {
       {installedApps?.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-muted-foreground mb-4">
-            You haven't installed any apps yet.
+            You haven&apos;t installed any apps yet.
           </p>
           <Link href="/marketplace">
             <Button>Browse Marketplace</Button>

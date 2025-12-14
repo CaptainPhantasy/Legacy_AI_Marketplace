@@ -1,7 +1,7 @@
 # LEGACY AI PLATFORM - SINGLE SOURCE OF TRUTH (SSOT)
 
 **Last Updated**: December 14, 2025  
-**Status**: Phase 5 - Marketplace (Complete)  
+**Status**: Phase 8 - Run Engine (Complete)  
 **Build Method**: AI Studio Generation → Cursor Execution
 
 ---
@@ -30,9 +30,9 @@
 | **3** | Platform Shell & Dashboard | ✅ Complete | Layout, dashboard, admin guard, UI components |
 | **4** | Connections & OAuth | ✅ Complete | OAuth flows, encryption, connector management |
 | **5** | Marketplace | ✅ Complete | Browse, filter, app detail, install flow |
-| **6** | Install Flow | ⬜ Not Started | Grant management UI refinement |
-| **7** | App Runner | ⬜ Not Started | Config form, run UI, output |
-| **8** | Run Engine | ⬜ Not Started | Gemini execution, validation |
+| **6** | Install Flow | ✅ Complete | Grant management UI, config forms, installed apps page |
+| **7** | App Runner | ✅ Complete | Run execution UI, streaming status, output rendering |
+| **8** | Run Engine | ✅ Complete | Gemini execution, validation, context building |
 | **9** | Admin Panel | ⬜ Not Started | App CRUD, manifest editor |
 | **10** | Seed Data | ⬜ Not Started | SubSentry Lite app |
 
@@ -50,10 +50,10 @@ src/
 │   │   ├── connections/page.tsx              ✅ EXISTS
 │   │   ├── marketplace/page.tsx              ✅ EXISTS
 │   │   ├── marketplace/[slug]/page.tsx       ✅ EXISTS
-│   │   ├── apps/page.tsx                     ⬜ TODO
-│   │   ├── apps/[id]/page.tsx                ⬜ TODO
-│   │   ├── apps/[id]/runs/[runId]/page.tsx   ⬜ TODO
-│   │   └── runs/page.tsx                     ⬜ TODO
+│   │   ├── apps/page.tsx                     ✅ EXISTS
+│   │   ├── apps/[id]/page.tsx                ✅ EXISTS
+│   │   └── runs/page.tsx                     ✅ EXISTS
+│   │   └── runs/[id]/page.tsx                ✅ EXISTS
 │   ├── (admin)/
 │   │   ├── layout.tsx                        ✅ EXISTS
 │   │   ├── apps/page.tsx                     ⬜ TODO
@@ -63,13 +63,14 @@ src/
 │   ├── api/
 │   │   ├── connectors/[type]/connect/route.ts    ✅ EXISTS
 │   │   ├── connectors/[type]/callback/route.ts   ✅ EXISTS
-│   │   └── runs/[id]/route.ts                    ⬜ TODO
+│   │   └── runs/[id]/execute/route.ts           ✅ EXISTS
 │   ├── actions/
 │   │   ├── apps.ts                           ⬜ TODO
 │   │   ├── installs.ts                       ✅ EXISTS
-│   │   ├── grants.ts                         ⬜ TODO
+│   │   ├── grants.ts                         ✅ EXISTS
 │   │   ├── connectors.ts                     ✅ EXISTS
-│   │   └── runs.ts                           ⬜ TODO
+│   │   ├── runs.ts                           ✅ EXISTS
+│   │   └── installs.ts                       ✅ EXISTS (updated with updateAppConfig)
 │   ├── layout.tsx                            ✅ EXISTS (default)
 │   ├── page.tsx                              ✅ EXISTS (needs update)
 │   └── globals.css                           ✅ EXISTS
@@ -88,13 +89,16 @@ src/
 │   │   ├── marketplace-filters.tsx            ✅ EXISTS
 │   │   └── install-button.tsx                 ✅ EXISTS
 │   ├── apps/
-│   │   ├── installed-app-card.tsx            ⬜ TODO
-│   │   ├── app-runner.tsx                    ⬜ TODO
-│   │   └── config-form.tsx                   ⬜ TODO
+│   │   ├── installed-app-card.tsx            ✅ EXISTS
+│   │   ├── app-runner.tsx                    ✅ EXISTS
+│   │   ├── config-form.tsx                   ✅ EXISTS
+│   │   └── grant-manager.tsx                 ✅ EXISTS
 │   ├── runs/
-│   │   ├── run-list.tsx                      ⬜ TODO
-│   │   ├── run-status.tsx                    ⬜ TODO
-│   │   └── run-output.tsx                    ⬜ TODO
+│   │   ├── run-list.tsx                      ✅ EXISTS
+│   │   ├── run-status.tsx                    ✅ EXISTS
+│   │   └── run-output.tsx                    ✅ EXISTS
+│   ├── ui/
+│   │   └── label.tsx                         ✅ EXISTS
 │   └── admin/
 │       ├── app-editor.tsx                    ⬜ TODO
 │       └── version-editor.tsx                ⬜ TODO
@@ -105,15 +109,15 @@ src/
 │   │   ├── client.ts                         ✅ EXISTS
 │   │   └── middleware.ts                     ✅ EXISTS
 │   ├── connectors/
-│   │   ├── google-drive.ts                   ⬜ TODO
-│   │   ├── gmail.ts                          ⬜ TODO
-│   │   └── oauth.ts                          ⬜ TODO
+│   │   ├── google-drive.ts                   ✅ EXISTS
+│   │   ├── gmail.ts                          ✅ EXISTS
+│   │   └── oauth.ts                          ✅ EXISTS
 │   ├── runtime/
-│   │   ├── engine.ts                         ⬜ TODO
-│   │   ├── gemini.ts                         ⬜ TODO
-│   │   ├── context.ts                        ⬜ TODO
-│   │   └── validation.ts                     ⬜ TODO
-│   ├── encryption.ts                         ⬜ TODO
+│   │   ├── engine.ts                         ✅ EXISTS
+│   │   ├── gemini.ts                         ✅ EXISTS
+│   │   ├── context.ts                        ✅ EXISTS
+│   │   └── validation.ts                     ✅ EXISTS
+│   ├── encryption.ts                         ✅ EXISTS
 │   ├── admin.ts                              ✅ EXISTS
 │   └── utils.ts                              ✅ EXISTS
 │
@@ -247,19 +251,16 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ## 🚀 NEXT BUILD TASK
 
-**Current Phase**: 6 - Install Flow Refinement (or Phase 7 - App Runner)
+**Current Phase**: 9 - Admin Panel
 
 **Next Files to Generate**:
-1. `src/app/(platform)/apps/page.tsx` - Installed apps list
-2. `src/app/(platform)/apps/[id]/page.tsx` - App runner UI
-3. `src/components/apps/installed-app-card.tsx` - App card component
-4. `src/components/apps/app-runner.tsx` - Run execution UI
-5. `src/components/apps/config-form.tsx` - Configuration form
-6. `src/app/api/runs/[id]/route.ts` - Run execution API (streaming)
-7. `src/lib/runtime/engine.ts` - Execution engine
-8. `src/lib/runtime/gemini.ts` - Gemini client
-9. `src/lib/runtime/context.ts` - Context building
-10. `src/lib/runtime/validation.ts` - Output validation
+1. `src/app/(admin)/apps/page.tsx` - Admin apps list
+2. `src/app/(admin)/apps/new/page.tsx` - Create app page
+3. `src/app/(admin)/apps/[id]/edit/page.tsx` - Edit app page
+4. `src/app/(admin)/runs/page.tsx` - Admin runs view
+5. `src/components/admin/app-editor.tsx` - App manifest editor
+6. `src/components/admin/version-editor.tsx` - Version editor
+7. `src/app/actions/apps.ts` - App CRUD server actions
 
 ---
 
@@ -277,6 +278,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 | 2025-12-14 | Phase 4 | Connections & OAuth completed: encryption utilities (AES-256-GCM), OAuth flow helpers, Google Drive/Gmail wrappers, connect/callback API routes, connections page |
 | 2025-12-14 | Phase 5 | Marketplace completed: browse page with filters, app detail page, install/uninstall flow, manifest types, all marketplace components |
 | 2025-12-14 | Cleanup | Removed orphaned Field Service Management functions from database, verified clean RLS policies |
+| 2025-12-14 | Phase 8 | Runtime Engine completed: Gemini client, context builder, validation, execution engine with connector data fetching |
+| 2025-12-14 | Phase 7 | App Runner completed: streaming API route, run actions, status/output components, run history pages |
+| 2025-12-14 | Phase 6 | My Apps & Grants completed: installed apps page, grant manager, config form, app detail/runner page |
 
 ---
 
