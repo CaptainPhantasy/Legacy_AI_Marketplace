@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "unset __NEXT_PRIVATE_STANDALONE_CONFIG __NEXT_PRIVATE_ORIGIN NEXT_DEPLOYMENT_ID __NEXT_PRIVATE_RUNTIME_TYPE NEXT_OTEL_FETCH_DISABLED 2>/dev/null || true && next build",
+    "check": "npm run lint && npm test && tsc --noEmit && npm run build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
