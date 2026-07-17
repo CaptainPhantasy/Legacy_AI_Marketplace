@@ -28,7 +28,7 @@ export default async function PlatformLayout({
   // Get user profile
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, avatar_url, is_admin')
+    .select('full_name, avatar_url')
     .eq('id', user.id)
     .single()
 

@@ -4,7 +4,7 @@ CREATE TABLE profiles (
   email TEXT UNIQUE NOT NULL,
   full_name TEXT,
   avatar_url TEXT,
-  is_admin BOOLEAN GENERATED ALWAYS AS (email = 'douglastalley1977@gmail.com') STORED,
+  is_admin BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

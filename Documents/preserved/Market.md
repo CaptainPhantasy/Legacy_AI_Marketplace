@@ -58,7 +58,7 @@ Users connect services **ONCE** at the platform level. Each installed app reques
 ### Authentication
 - **Method**: Google Sign-In (OIDC) via Supabase Auth
 - **Single method**: No passwords, only Google OAuth
-- **Admin**: Single email allowlist (`douglastalley1977@gmail.com`)
+- **Admin**: Trusted `platform_role=admin` application metadata or a server-managed administrator grant
 
 ---
 
@@ -340,13 +340,11 @@ const { accessToken, refreshToken } = await decryptTokens({
 
 **Admin Enforcement**:
 ```typescript
-const ADMIN_EMAIL = 'douglastalley1977@gmail.com'
-
 export async function requireAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user || user.app_metadata?.platform_role !== 'admin') {
     redirect('/marketplace')
   }
   
@@ -402,7 +400,7 @@ type AppInsert = Database['public']['Tables']['apps']['Insert']
 
 - **RLS (Row Level Security)**: Every table has RLS enabled
 - **Auto-timestamps**: `created_at` and `updated_at` with triggers
-- **Generated columns**: `profiles.is_admin` auto-generated from email
+- **Admin boundary**: role metadata and server-managed user-ID grants; profile fields cannot elevate privileges
 - **Indexes**: Performance indexes on foreign keys and commonly queried columns
 - **Triggers**: Auto-create profiles on user signup
 
@@ -596,7 +594,7 @@ Apps are defined by **manifests** (JSON) stored in `app_versions.manifest_json`:
 
 ### 5. Admin System
 
-Single admin email: `douglastalley1977@gmail.com`
+Administrators are assigned through trusted auth application metadata or a server-managed grant.
 
 Admin can:
 - Create/edit/publish apps
