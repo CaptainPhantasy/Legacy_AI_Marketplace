@@ -19,6 +19,7 @@
     ".supercache/**"
   ],
   "reviewedDenyOverrides": [".env.example"],
+  "secretFixtureAllowlist": ["supabase/config.toml"],
   "gates": [
     {
       "name": "npm-check",
