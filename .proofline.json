@@ -18,6 +18,7 @@
     ".omp/**",
     ".supercache/**"
   ],
+  "reviewedDenyOverrides": [".env.example"],
   "gates": [
     {
       "name": "npm-check",
