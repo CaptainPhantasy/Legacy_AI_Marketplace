@@ -3,7 +3,7 @@ Name: Legacy AI Platform
 Type: Micro-app marketplace and runtime platform
 Stack: Next.js 16 + React 19 + Tailwind v4 + Supabase
 Auth: Google Sign-In (OIDC) - Single method, no passwords
-Admin: Single email allowlist (douglastalley1977@gmail.com)
+Admin: Trusted auth application role or server-managed administrator grant
 
 WHAT YOU'RE BUILDING
 A unified platform that:
@@ -33,7 +33,6 @@ sqlCREATE TABLE profiles (
   email TEXT UNIQUE NOT NULL,
   full_name TEXT,
   avatar_url TEXT,
-  is_admin BOOLEAN GENERATED ALWAYS AS (email = 'douglastalley1977@gmail.com') STORED,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -105,7 +104,7 @@ CREATE POLICY "Anyone can view published apps" ON apps
 
 CREATE POLICY "Admin can manage all apps" ON apps
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
+    (SELECT public.is_platform_admin())
   );
 app_versions
 sqlCREATE TABLE app_versions (
@@ -141,7 +140,7 @@ CREATE POLICY "Anyone can view active versions of published apps" ON app_version
 
 CREATE POLICY "Admin can manage all versions" ON app_versions
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
+    (SELECT public.is_platform_admin())
   );
 installed_apps
 sqlCREATE TABLE installed_apps (
@@ -225,7 +224,7 @@ CREATE POLICY "Users can create own runs" ON runs
 
 CREATE POLICY "Admin can view all runs" ON runs
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
+    (SELECT public.is_platform_admin())
   );
 run_artifacts
 sqlCREATE TABLE run_artifacts (
@@ -254,7 +253,7 @@ CREATE POLICY "Users can view artifacts for own runs" ON run_artifacts
 
 CREATE POLICY "Admin can view all artifacts" ON run_artifacts
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
+    (SELECT public.is_platform_admin())
   );
 
 FILE STRUCTURE
@@ -453,13 +452,11 @@ ts// lib/admin.ts
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
-const ADMIN_EMAIL = 'douglastalley1977@gmail.com'
-
 export async function requireAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user || user.app_metadata?.platform_role !== 'admin') {
     redirect('/marketplace')
   }
   
@@ -470,7 +467,7 @@ export async function isAdmin(): Promise<boolean> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  return user?.email === ADMIN_EMAIL
+  return user?.app_metadata?.platform_role === 'admin'
 }
 Admin Layout Guard
 tsx// app/(admin)/layout.tsx
@@ -498,14 +495,12 @@ ts// app/actions/apps.ts
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-const ADMIN_EMAIL = 'douglastalley1977@gmail.com'
-
 export async function createApp(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   // ENFORCE ADMIN
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user || user.app_metadata?.platform_role !== 'admin') {
     throw new Error('Unauthorized: Admin access required')
   }
   
@@ -525,7 +520,7 @@ export async function publishApp(appId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user || user.app_metadata?.platform_role !== 'admin') {
     throw new Error('Unauthorized: Admin access required')
   }
   

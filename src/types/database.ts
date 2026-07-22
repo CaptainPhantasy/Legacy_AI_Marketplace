@@ -293,7 +293,6 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
-          is_admin: boolean | null
           updated_at: string | null
         }
         Insert: {
@@ -302,7 +301,6 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
-          is_admin?: boolean | null
           updated_at?: string | null
         }
         Update: {
@@ -311,7 +309,6 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
-          is_admin?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
@@ -438,7 +435,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_platform_admin: { Args: never; Returns: boolean }
+      publish_app_version: {
+        Args: { target_app_id: string; target_version_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_status: "draft" | "published" | "archived"

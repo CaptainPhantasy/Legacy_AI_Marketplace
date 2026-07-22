@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "publish": true,
+  "baseBranch": "main",
+  "remote": "origin",
+  "allowLocalRemote": false,
+  "include": ["**"],
+  "deny": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.key",
+    "node_modules/**",
+    ".next/**",
+    ".git/**",
+    ".harness/**",
+    ".pi/**",
+    ".omp/**",
+    ".supercache/**"
+  ],
+  "reviewedDenyOverrides": [".env.example"],
+  "secretFixtureAllowlist": ["supabase/config.toml"],
+  "gates": [
+    {
+      "name": "npm-check",
+      "command": ["npm", "run", "check"],
+      "required": true
+    }
+  ]
+}

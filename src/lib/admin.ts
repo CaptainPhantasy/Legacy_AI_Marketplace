@@ -1,17 +1,32 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { hasPlatformAdminRole } from "@/lib/admin-auth";
 
-const ADMIN_EMAIL = 'douglastalley1977@gmail.com'
+async function getAdminSession() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { supabase, user: null, authorized: false };
+
+  const { data: databaseGrant, error } =
+    await supabase.rpc("is_platform_admin");
+  return {
+    supabase,
+    user,
+    authorized:
+      hasPlatformAdminRole(user) || (!error && databaseGrant === true),
+  };
+}
 
 /**
  * Check if the current user is an admin
  * @returns true if user is admin, false otherwise
  */
 export async function isAdmin(): Promise<boolean> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  return user?.email === ADMIN_EMAIL
+  const { authorized } = await getAdminSession();
+  return authorized;
 }
 
 /**
@@ -20,24 +35,25 @@ export async function isAdmin(): Promise<boolean> {
  * @throws Redirects if not admin
  */
 export async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
+  const { user, authorized } = await getAdminSession();
+
   if (!user) {
-    redirect('/login')
+    redirect("/login");
   }
-  
-  if (user.email !== ADMIN_EMAIL) {
-    redirect('/marketplace')
+
+  if (!authorized) {
+    redirect("/marketplace");
   }
-  
-  return user
+
+  return user;
 }
 
-/**
- * Get admin email constant
- * @returns The admin email address
- */
-export function getAdminEmail(): string {
-  return ADMIN_EMAIL
+export async function requireAdminAction() {
+  const { supabase, user, authorized } = await getAdminSession();
+
+  if (!user || !authorized) {
+    throw new Error("Unauthorized");
+  }
+
+  return { supabase, user };
 }

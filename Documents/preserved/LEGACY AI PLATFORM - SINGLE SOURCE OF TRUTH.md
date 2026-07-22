@@ -14,7 +14,7 @@
 | **Type** | Micro-app marketplace + AI runtime platform |
 | **Stack** | Next.js 16 + React 19 + Tailwind v4 + Supabase |
 | **Auth** | Google Sign-In (OIDC) via Supabase - No passwords |
-| **Admin** | `douglastalley1977@gmail.com` (hardcoded, single admin) |
+| **Admin** | Trusted auth application role or server-managed administrator grant |
 | **AI Runtime** | Google Gemini (2.5 Flash default, 3 Pro for complex) |
 
 ---
@@ -151,7 +151,7 @@ src/
 
 These rules are **NON-NEGOTIABLE**:
 
-1. **Admin Email Hardcoded**: `douglastalley1977@gmail.com` - checked server-side in ALL admin operations
+1. **Admin Authorization**: trusted `platform_role=admin` application metadata or a server-managed user-ID grant, checked server-side in every admin operation
 2. **Token Encryption**: All OAuth tokens encrypted with AES-256-GCM before storage
 3. **RLS Everywhere**: Every table has Row Level Security enabled
 4. **Server-Side Auth**: Never trust client for auth decisions
@@ -173,10 +173,8 @@ if (!user) redirect('/login')
 
 ### Admin Guard (Server Action)
 ```typescript
-const ADMIN_EMAIL = 'douglastalley1977@gmail.com'
-
 const { data: { user } } = await supabase.auth.getUser()
-if (!user || user.email !== ADMIN_EMAIL) {
+if (!user || user.app_metadata?.platform_role !== 'admin') {
   throw new Error('Unauthorized: Admin access required')
 }
 ```

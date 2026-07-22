@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "unset __NEXT_PRIVATE_STANDALONE_CONFIG __NEXT_PRIVATE_ORIGIN NEXT_DEPLOYMENT_ID __NEXT_PRIVATE_RUNTIME_TYPE NEXT_OTEL_FETCH_DISABLED 2>/dev/null || true && next build",
+    "check": "npm run lint && npm test && tsc --noEmit && npm run build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
     "db:start": "npx supabase start",
     "db:stop": "npx supabase stop",
     "db:reset": "npx supabase db reset",
@@ -25,7 +27,7 @@
     "google-auth-library": "^10.5.0",
     "googleapis": "^168.0.0",
     "lucide-react": "^0.561.0",
-    "next": "^16.0.10",
+    "next": "^16.2.10",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-hook-form": "^7.68.0",
@@ -40,12 +42,16 @@
     "babel-plugin-react-compiler": "1.0.0",
     "baseline-browser-mapping": "^2.9.7",
     "eslint": "^9",
-    "eslint-config-next": "16.0.10",
+    "eslint-config-next": "16.2.10",
     "postcss": "^8.5.6",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "supabase": "^2.67.1",
     "tailwindcss": "^4.1.18",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^3.2.7"
+  },
+  "overrides": {
+    "postcss": "$postcss"
   }
 }
